@@ -1,0 +1,283 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: white;
+}
+
+header {
+  background-color: #ffffff;
+  color: white;
+  padding: 10px 20px
+}
+
+
+main {
+  padding: 20px;
+}
+
+
+.services {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.product {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 15px;
+  width: 200px;
+  text-align: center;
+}
+
+button {
+  padding: 8px 12px;
+  background-color: #f10909;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: Lalezar;
+}
+
+button:hover {
+  background-color: orange;
+}
+
+footer {
+  text-align: center;
+  margin-top: 20px;
+  font-weight: bold;
+}
+.servipic{
+  width: 70%;
+  height: 73%;
+}
+.nameservices{
+  color: rgb(141, 6, 6);
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100px;
+}
+
+/* Logo */
+.nav-left, .nav-right {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  width: 400px;
+  height: auto;
+}
+
+/* Navigation Links */
+.nav-links {
+  list-style: none;
+  display: flex;
+  font-family: Inknut Antiqua;
+  font-weight: bold;
+  font-size: larger;
+}
+.nav-links a.current-page {
+  color: #ff6600 !important;
+  font-weight: bold;
+}
+
+.nav-links li {
+  margin-left: 20px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+  transition: color 0.3s;
+  line-height: 100px; /* Center menu links vertically */
+}
+
+.nav-links a:hover {
+  color: orange;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .navbar {
+      flex-direction: column;
+      height: 100vh; /* Full height of the viewport */
+      justify-content: center; /* Center vertically */
+      align-items: center; /* Center horizontally */
+      transform: translateX(-100px); /* Move slightly to the left */
+  }
+
+  .nav-left, .nav-right {
+      justify-content: center;
+  }
+
+  .logo {
+      width: 300px; /* Slightly smaller on mobile */
+      margin-bottom: 20px; /* Add spacing below the logo */
+  }
+
+  .nav-links {
+      flex-direction: column;
+      align-items: center;
+  }
+
+  .nav-links li {
+      margin: 10px 0;
+  }
+
+  .nav-links a {
+      line-height: normal;
+      font-size: 18px;
+  }
+  .shop-now-btn {
+    padding: 0.6rem 1.8rem; /* Smaller padding on mobile */
+    font-size: clamp(0.8rem, 4vw, 1rem); /* More aggressive scaling */
+  }
+}
+.section{
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+;
+}
+.slider{
+  width: 800px;
+  height: 500px;
+  border-radius:10px;
+  overflow: hidden;
+}
+.slide{
+  width: 500%;
+  height:500px;
+  display:flex;
+}
+.slide input{
+  display:none;
+}
+.st{
+  width:20%;
+  transition: 2s;
+}
+.st img{
+  width:800px;
+  height:500px;
+}
+.nav-m{
+  position: absolute;
+  width:800px;
+  margin-top: -40px;
+  justify-content: center;
+  display: flex;
+}
+.m-btn{
+  border: 2px solid #ff6600;
+  padding:5px;
+  border-radius:10px;
+  cursor: pointer;
+  transition: 1s;
+}
+.m-btn:not(:last-child){
+  margin-right: 30px;
+}
+.m-btn:hover{
+  background-color: #ff6600;
+}
+#radio1:checked ~.first{
+  margin-left: 0;
+}
+#radio2:checked ~.first{
+  margin-left: -20%;
+}
+#radio3:checked ~.first{
+  margin-left: -40%;
+}
+#radio4:checked ~.first{
+  margin-left: -60%;
+}
+.nav-auto{
+  position: absolute;
+  width:800px;
+  margin-top:460px;
+  display: flex;
+  justify-content: center;
+}
+.nav-auto div{
+  border: 2px solid #ff6600;
+  padding: 5px;
+  border-radius: 10px;
+  transition: 1s;
+}
+.nav-auto div:not(:last-child){
+  margin-right: 30px;
+  justify-content: center;
+}
+#radio1:checked ~.nav-auto .a-b1{
+  background-color: #ff6600;
+}
+#radio2:checked ~.nav-auto .a-b2{
+  background-color: #ff6600;
+}
+#radio3:checked ~.nav-auto .a-b3{
+  background-color: #ff6600;
+}
+#radio4:checked ~.nav-auto .a-b4{
+  background-color: #ff6600;
+}
+/* Shop Now Button Styles */
+
+
+.shop-now-container {
+  text-align: center;
+  margin-top: 1rem; /* Default gap for mobile */
+  position: relative;
+  z-index: 100; /* Higher than slideshow */
+}
+
+.shop-now-btn {
+  display: inline-block;
+  padding: 0.8rem 2.5rem;
+  background-color: #a80303;
+  color: #fff;
+  font-size: clamp(0.9rem, 3vw, 1.1rem);
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: 2px solid #000;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  width: auto; /* Allows button to shrink/grow */
+  max-width: 100%; /* Prevents overflow */
+}
+.shop-now-btn:hover {
+  background-color: transparent;
+  color: #000;
+}
+
+/* Adjust the slider's bottom margin if needed */
+.slider {
+  margin-bottom: 0; /* Removes any default bottom margin */
+}
+.section {
+  position: relative; /* Needed for absolute positioning of child */
+}
+@media (min-width: 1024px) {
+  .shop-now-container {
+    margin-top: -13rem; /* Pulls the button up by 2rem */
+  }
+  
+}
+
+

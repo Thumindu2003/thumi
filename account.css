@@ -1,0 +1,171 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: white;
+  }
+  .frmLogo{
+    width: 60%;
+    height: auto;
+    display: block;
+    margin: 0 auto 0px auto;
+    margin-top: -60px;
+  }
+  
+  .form-container {
+    max-width: 400px;
+    margin: 0 auto;
+    background-color: rgb(238, 234, 234);
+    padding: 30px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  
+ 
+
+.form-container h2 {
+  text-align: center;
+  margin-top: -60px;  /* Reduced from -15px */
+  margin-bottom: 15px; /* Reduced from 20px */
+  position: relative;
+  top: -5px; /* Reduced from -10px */
+  color: purple;
+  font-family: Inknut Antiqua;
+}
+
+.form-container h1 {
+  text-align: center;
+  margin-top: -60px;  /* Reduced from -15px */
+  margin-bottom: 20px; /* Reduced from 30px */
+  position: relative;
+  top: -5px; /* Reduced from -10px */
+  color: rgb(0, 0, 0);
+  font-family: Inknut Antiqua;
+}
+  .input-group {
+    position: relative;
+    margin-bottom: 5px;
+  }
+  
+  .input-group input {
+    width: 100%;
+    padding: 12px 12px 12px 40px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  
+  .input-icon {
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    color: #777;
+  }
+  
+  
+  
+  .forgot-password {
+    text-align: right;
+    margin-bottom: 20px;
+  }
+  
+  .forgot-password a {
+    color: #0948f6;
+    text-decoration: none;
+    font-family: Inknut Antiqua;
+  }
+  
+  .form-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-family: Inknut Antiqua;
+  }
+  .signup-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-family: Inknut Antiqua;
+  }
+  .form-button:hover {
+  background-color: #2f06f9;
+  transform: translateY(-1px);
+}
+
+.form-button:active {
+  transform: translateY(0);
+}
+.signup-button:hover {
+  background-color: #fb0909;
+  transform: translateY(-1px);
+}
+
+.signup-button:active {
+  transform: translateY(0);
+}
+  .txtsign{
+    color: rgb(240, 8, 8);
+    text-align: center;
+    size: 16px;
+  }
+  
+  .divider {
+    text-align: center;
+    margin: 20px 0;
+    position: relative;
+  }
+  
+  .divider::before,
+  .divider::after {
+    content: "";
+    display: inline-block;
+    width: 40%;
+    height: 1px;
+    background-color: #ddd;
+    position: absolute;
+    top: 50%;
+  }
+  
+  .divider::before {
+    left: 0;
+  }
+  
+  .divider::after {
+    right: 0;
+  }
+  
+  .alternate-action {
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  .alternate-action a {
+    color: #4f07e1;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  
+  @media (max-height: 600px) {
+    .form-logo { height: 120px; width: 120px; }
+    .form-container h2 { margin-top: -5px; }
+  }
+   .input-container {
+    margin-bottom: 20px;
+  }
+  
+  .error-message {
+    color: red;
+    font-size: 12px;
+    margin-top: 5px;
+    display: none;
+  }
