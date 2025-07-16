@@ -8,16 +8,35 @@ if (!isset($_SESSION['admin_loggedin']) || $_SESSION['admin_loggedin'] !== true)
     exit();
 }
 
-// Handle order status update
+// Handle order status update for tblorders
 if (isset($_POST['update_status'])) {
     $orderId = $_POST['order_id'];
     $status = $_POST['status'];
-    
-    $stmt = $conn->prepare("UPDATE tblorders SET status = ? WHERE order_id = ?");
-    $stmt->bind_param("si", $status, $orderId);
-    $stmt->execute();
-    
-    $_SESSION['message'] = "Order status updated successfully!";
+    // Only allow 'pending' or 'completed'
+    if (in_array($status, ['pending', 'completed'])) {
+        $stmt = $conn->prepare("UPDATE tblorders SET status = ? WHERE order_id = ?");
+        $stmt->bind_param("si", $status, $orderId);
+        $stmt->execute();
+        $_SESSION['message'] = "Order status updated successfully!";
+    } else {
+        $_SESSION['message'] = "Invalid status value.";
+    }
+    header("Location: admin_orders.php");
+    exit();
+}
+
+// Handle cart_orders status update
+if (isset($_POST['update_cart_status'])) {
+    $orderId = $_POST['cart_order_id'];
+    $status = $_POST['status'];
+    if (in_array($status, ['pending', 'completed'])) {
+        $stmt = $conn->prepare("UPDATE cart_orders SET status = ? WHERE order_id = ?");
+        $stmt->bind_param("si", $status, $orderId);
+        $stmt->execute();
+        $_SESSION['message'] = "Cart order status updated successfully!";
+    } else {
+        $_SESSION['message'] = "Invalid status value.";
+    }
     header("Location: admin_orders.php");
     exit();
 }
@@ -38,8 +57,34 @@ if (isset($_GET['delete'])) {
     exit();
 }
 
-// Get all orders
-$orders = $conn->query("SELECT * FROM tblorders ORDER BY order_date DESC")->fetch_all(MYSQLI_ASSOC);
+// Get all orders with user FName
+$order_result = $conn->query("
+    SELECT o.*, u.FName AS user_fname
+    FROM tblorders o
+    LEFT JOIN tblUser u ON o.user_name = u.User_name
+    ORDER BY o.order_date DESC
+");
+if ($order_result === false) {
+    $orders = [];
+    $_SESSION['message'] = "Failed to fetch orders: " . $conn->error;
+} else {
+    $orders = $order_result->fetch_all(MYSQLI_ASSOC);
+}
+
+// Fetch all cart_orders for admin view, join with tblservice and tblUser for FName
+$cart_result = $conn->query("
+    SELECT co.*, ts.SName AS service_name, u.FName AS user_fname
+    FROM cart_orders co
+    LEFT JOIN tblservice ts ON co.SID = ts.SID
+    LEFT JOIN tblUser u ON co.user_name = u.User_name
+    ORDER BY co.order_date DESC
+");
+if ($cart_result === false) {
+    $cart_orders = [];
+    $_SESSION['message'] = "Failed to fetch cart orders: " . $conn->error;
+} else {
+    $cart_orders = $cart_result->fetch_all(MYSQLI_ASSOC);
+}
 ?>
 
 <!DOCTYPE html>
@@ -76,6 +121,8 @@ $orders = $conn->query("SELECT * FROM tblorders ORDER BY order_date DESC")->fetc
             <thead>
               <tr>
                 <th>Order ID</th>
+                <th>User Name</th>
+                <th>Full Name</th>
                 <th>Customer</th>
                 <th>Contact</th>
                 <th>Email</th>
@@ -90,10 +137,12 @@ $orders = $conn->query("SELECT * FROM tblorders ORDER BY order_date DESC")->fetc
               <?php foreach ($orders as $order): ?>
               <tr>
                 <td>#<?php echo $order['order_id']; ?></td>
+                <td><?php echo htmlspecialchars($order['user_name'] ?? ''); ?></td>
+                <td><?php echo htmlspecialchars($order['user_fname'] ?? ''); ?></td>
                 <td><?php echo htmlspecialchars($order['customer_name']); ?></td>
                 <td><?php echo htmlspecialchars($order['customer_contact']); ?></td>
                 <td><?php echo htmlspecialchars($order['customer_email']); ?></td>
-                <td><?php echo htmlspecialchars($order['service_name']); ?></td>
+                <td><?php echo htmlspecialchars($order['service_name'] ?? 'N/A'); ?></td>
                 <td>Rs.<?php echo number_format($order['total_amount'], 2); ?></td>
                 <td><?php echo date('M d, Y', strtotime($order['order_date'])); ?></td>
                 <td>
@@ -101,14 +150,66 @@ $orders = $conn->query("SELECT * FROM tblorders ORDER BY order_date DESC")->fetc
                     <input type="hidden" name="order_id" value="<?php echo $order['order_id']; ?>">
                     <select name="status" onchange="this.form.submit()">
                       <option value="pending" <?php echo $order['status'] === 'pending' ? 'selected' : ''; ?>>Pending</option>
-                      <option value="processing" <?php echo $order['status'] === 'processing' ? 'selected' : ''; ?>>Processing</option>
                       <option value="completed" <?php echo $order['status'] === 'completed' ? 'selected' : ''; ?>>Completed</option>
                     </select>
+                    <input type="hidden" name="update_status" value="1">
                   </form>
                 </td>
                 <td class="actions">
                   <a href="admin_view_order.php?id=<?php echo $order['order_id']; ?>" class="btn btn-view"><i class="fas fa-eye"></i> View</a>
                   <a href="admin_orders.php?delete=<?php echo $order['order_id']; ?>" class="btn btn-delete" onclick="return confirm('Are you sure you want to delete this order?')"><i class="fas fa-trash"></i> Delete</a>
+                </td>
+              </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Updated: cart_orders table -->
+        <div class="orders-table" style="margin-top:40px;">
+          <h2>Cart Orders</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>User Name</th>
+                <th>Full Name</th>
+                <th>SID</th>
+                <th>Service Name</th>
+                <th>Quantity</th>
+                <th>Amount</th> <!-- Add this column -->
+                <th>Order Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach ($cart_orders as $order): ?>
+              <tr>
+                <td><?php echo $order['order_id']; ?></td>
+                <td><?php echo htmlspecialchars($order['user_name']); ?></td>
+                <td><?php echo htmlspecialchars($order['user_fname'] ?? ''); ?></td>
+                <td><?php echo $order['SID']; ?></td>
+                <td><?php echo htmlspecialchars($order['service_name'] ?? 'N/A'); ?></td>
+                <td><?php echo $order['quantity']; ?></td>
+                <td>
+                  <?php
+                    if (isset($order['total_amount']) && is_numeric($order['total_amount'])) {
+                      echo 'Rs.' . number_format((float)$order['total_amount'], 2);
+                    } else {
+                      echo '-';
+                    }
+                  ?>
+                </td>
+                <td><?php echo $order['order_date']; ?></td>
+                <td>
+                  <form method="POST" class="status-form">
+                    <input type="hidden" name="cart_order_id" value="<?php echo $order['order_id']; ?>">
+                    <select name="status" onchange="this.form.submit()">
+                      <option value="pending" <?php echo $order['status'] === 'pending' ? 'selected' : ''; ?>>Pending</option>
+                      <option value="completed" <?php echo $order['status'] === 'completed' ? 'selected' : ''; ?>>Completed</option>
+                    </select>
+                    <input type="hidden" name="update_cart_status" value="1">
+                  </form>
                 </td>
               </tr>
               <?php endforeach; ?>

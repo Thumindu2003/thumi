@@ -9,8 +9,8 @@ $username = "root";
 $password = ""; // or your MySQL root password
 $dbname = "pangolin_creationdb"; // <-- Updated to match your actual database name
 
-$mysqli = new mysqli($servername, $username, $password, $dbname);
-if ($mysqli->connect_error) {
-    die("Connection failed: " . $mysqli->connect_error);
+$conn = new mysqli($servername, $username, $password, $dbname);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
 ?>

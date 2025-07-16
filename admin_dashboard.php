@@ -21,11 +21,77 @@ if (!isset($conn) || $conn === null || $conn->connect_error) {
     exit();
 }
 
+// Functions to get order counts
+function getPendingOrdersCount($conn) {
+    $count = 0;
+    $res1 = $conn->query("SELECT COUNT(*) FROM tblorders WHERE status = 'pending'");
+    if ($res1) $count += $res1->fetch_row()[0];
+    $res2 = $conn->query("SELECT COUNT(*) FROM cart_orders WHERE status = 'pending'");
+    if ($res2) $count += $res2->fetch_row()[0];
+    return $count;
+}
+
+function getCompletedOrdersCount($conn) {
+    $count = 0;
+    $res1 = $conn->query("SELECT COUNT(*) FROM tblorders WHERE status = 'completed'");
+    if ($res1) $count += $res1->fetch_row()[0];
+    $res2 = $conn->query("SELECT COUNT(*) FROM cart_orders WHERE status = 'completed'");
+    if ($res2) $count += $res2->fetch_row()[0];
+    return $count;
+}
+
 // Get stats for dashboard
 $servicesCount = $conn->query("SELECT COUNT(*) FROM tblservice")->fetch_row()[0];
-$pendingOrders = $conn->query("SELECT COUNT(*) FROM tblorders WHERE status = 'pending'")->fetch_row()[0];
-$completedOrders = $conn->query("SELECT COUNT(*) FROM tblorders WHERE status = 'completed'")->fetch_row()[0];
-$recentOrders = $conn->query("SELECT * FROM tblorders ORDER BY order_date DESC LIMIT 5")->fetch_all(MYSQLI_ASSOC);
+$pendingOrders = getPendingOrdersCount($conn);
+$completedOrders = getCompletedOrdersCount($conn);
+
+// Fetch recent orders from tblorders
+$recentOrders = [];
+$result1 = $conn->query("SELECT order_id, customer_name, service_name, total_amount, order_date, status FROM tblorders ORDER BY order_date DESC");
+if ($result1 && $result1->num_rows > 0) {
+    $result1->data_seek(0); // Reset pointer
+    while ($row = $result1->fetch_assoc()) {
+        $recentOrders[] = [
+            'order_id' => $row['order_id'],
+            'customer_name' => $row['customer_name'],
+            'service_name' => $row['service_name'],
+            'total_amount' => $row['total_amount'],
+            'order_date' => $row['order_date'],
+            'status' => $row['status']
+        ];
+    }
+}
+
+// Fetch recent cart_orders (show each service as a separate order)
+$result2 = $conn->query("
+    SELECT co.order_id, co.user_name, co.SID, co.quantity, co.order_date, co.status, ts.SName, ts.SPrice
+    FROM cart_orders co
+    LEFT JOIN tblservice ts ON co.SID = ts.SID
+    ORDER BY co.order_date DESC
+");
+if ($result2 && $result2->num_rows > 0) {
+    $result2->data_seek(0); // Reset pointer
+    while ($row = $result2->fetch_assoc()) {
+        $amount = '';
+        if (is_numeric($row['SPrice']) && is_numeric($row['quantity'])) {
+            $amount = $row['SPrice'] * $row['quantity'];
+        }
+        $recentOrders[] = [
+            'order_id' => 'CART-' . $row['order_id'],
+            'customer_name' => $row['user_name'],
+            'service_name' => $row['SName'] . ' x' . $row['quantity'],
+            'total_amount' => $amount,
+            'order_date' => $row['order_date'],
+            'status' => $row['status']
+        ];
+    }
+}
+
+// Sort all orders by date descending
+usort($recentOrders, function($a, $b) {
+    return strtotime($b['order_date']) - strtotime($a['order_date']);
+});
+
 ?>
 
 <!DOCTYPE html>
@@ -37,7 +103,7 @@ $recentOrders = $conn->query("SELECT * FROM tblorders ORDER BY order_date DESC L
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="admin_style.css">
 </head>
-<body class="admin-dashboard">
+<body class="admin-dashboard">  
   <div class="admin-container">
     <!-- Sidebar -->
     <?php include 'admin_sidebar.php'; ?>
@@ -101,16 +167,30 @@ $recentOrders = $conn->query("SELECT * FROM tblorders ORDER BY order_date DESC L
               </tr>
             </thead>
             <tbody>
-              <?php foreach ($recentOrders as $order): ?>
-              <tr>
-                <td>#<?php echo $order['order_id']; ?></td>
-                <td><?php echo $order['customer_name']; ?></td>
-                <td><?php echo $order['service_name']; ?></td>
-                <td>Rs.<?php echo number_format($order['total_amount'], 2); ?></td>
-                <td><?php echo date('M d, Y', strtotime($order['order_date'])); ?></td>
-                <td><span class="status-badge <?php echo $order['status']; ?>"><?php echo ucfirst($order['status']); ?></span></td>
-              </tr>
-              <?php endforeach; ?>
+              <?php if (count($recentOrders) === 0): ?>
+                <tr>
+                  <td colspan="6" style="text-align:center;">No recent orders found.</td>
+                </tr>
+              <?php else: ?>
+                <?php foreach ($recentOrders as $order): ?>
+                <tr>
+                  <td><?php echo htmlspecialchars($order['order_id']); ?></td>
+                  <td><?php echo htmlspecialchars($order['customer_name']); ?></td>
+                  <td><?php echo htmlspecialchars($order['service_name']); ?></td>
+                  <td>
+                    <?php
+                      if (is_numeric($order['total_amount']) && $order['total_amount'] !== '') {
+                        echo 'Rs.' . number_format((float)$order['total_amount'], 2);
+                      } else {
+                        echo '-';
+                      }
+                    ?>
+                  </td>
+                  <td><?php echo date('M d, Y', strtotime($order['order_date'])); ?></td>
+                  <td><span class="status-badge <?php echo htmlspecialchars($order['status']); ?>"><?php echo ucfirst($order['status']); ?></span></td>
+                </tr>
+                <?php endforeach; ?>
+              <?php endif; ?>
             </tbody>
           </table>
         </div>
