@@ -9,8 +9,9 @@ $loggedIn = isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true;
 
 include "connection.php";
 
-if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
+// Change $conn to $mysqli for connection error check
+if ($mysqli->connect_error) {
+  die("Connection failed: " . $mysqli->connect_error);
 }
 ?>
 
@@ -49,11 +50,12 @@ if ($conn->connect_error) {
   <main>
     <section class="services">
       <?php
+      // Change $conn to $mysqli for queries
       $sql = "SELECT SID, SName, SPrice, image FROM tblservice";
-      $result = $conn->query($sql);
+      $result = $mysqli->query($sql);
 
       if (!$result) {
-          die("Query failed: " . $conn->error);
+          die("Query failed: " . $mysqli->error);
       }
 
       if ($result->num_rows > 0) {
@@ -89,36 +91,25 @@ if ($conn->connect_error) {
       ]
     });
 
-    function addToCart(SID, name, price, image) {
+    function addToCart(SID, SName, SPrice, image) {
       let cart = JSON.parse(localStorage.getItem('cart')) || [];
-      
       const existingItem = cart.find(item => item.SID === SID);
       if (existingItem) {
         existingItem.quantity = (existingItem.quantity || 1) + 1;
       } else {
-        cart.push({ SID, name, price, image, quantity: 1 });
+        cart.push({ SID, SName, SPrice, image, quantity: 1 });
       }
-      
       localStorage.setItem('cart', JSON.stringify(cart));
-      
-      notyf.success({
-        message: `${name} added to cart!`,
-        icon: { className: 'fas fa-shopping-cart', tagName: 'i' }
-      });
-      
       updateCartCount();
-      
-      fetch('cart_api.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'add_item', SID: SID })
-      }).catch(error => console.error('Error:', error));
+      notyf.success({ message: `${SName} added to cart!` });
     }
-    
+
     function updateCartCount() {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
-      const count = cart.reduce((total, item) => total + (item.quantity || 1), 0);
-      document.getElementById('cart-count').textContent = count;
+      // Sum all quantities
+      const totalQty = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+      document.getElementById('cart-count').textContent = totalQty;
+      localStorage.setItem('cart_count', totalQty);
     }
     
     // Initialize cart count
@@ -126,4 +117,4 @@ if ($conn->connect_error) {
   </script>
 </body>
 </html>
-<?php $conn->close(); ?>
+<?php $mysqli->close(); ?>

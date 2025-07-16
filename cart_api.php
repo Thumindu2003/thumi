@@ -15,40 +15,69 @@ try {
                 $SID = intval($input['SID']);
                 $sessionId = session_id();
                 
-                $stmt = $conn->prepare("INSERT INTO tbltempcart (sessionId, SID, quantity) VALUES (?, ?, 1) 
-                                      ON DUPLICATE KEY UPDATE quantity = quantity + 1");
+                $stmt = $mysqli->prepare("INSERT INTO tbltempcart (sessionId, SID) VALUES (?, ?) 
+                                      ON DUPLICATE KEY UPDATE SID = SID");
                 $stmt->bind_param("si", $sessionId, $SID);
                 $stmt->execute();
+                $stmt->close();
                 $response = ['status' => 'success'];
+                // Notify realtime server
+                $payload = json_encode([
+                    'user' => $sessionId
+                ]);
+                $opts = [
+                    'http' => [
+                        'method' => 'POST',
+                        'header' => "Content-Type: application/json\r\n",
+                        'content' => $payload
+                    ]
+                ];
+                @file_get_contents('http://localhost:3000/cart-update', false, stream_context_create($opts));
             }
             break;
             
         case 'remove_item':
             if (isset($input['SID'])) {
                 $SID = intval($input['SID']);
-                $sessionId = session_id();
-                
-                $stmt = $conn->prepare("DELETE FROM tbltempcart WHERE sessionId = ? AND SID = ?");
-                $stmt->bind_param("si", $sessionId, $SID);
-                $stmt->execute();
-                $response = ['status' => 'success'];
-            }
-            break;
-            
-        case 'save_cart':
-            if (isset($input['cart']) && is_array($input['cart'])) {
-                $sessionId = session_id();
-                $conn->query("DELETE FROM tbltempcart WHERE sessionId = '$sessionId'");
-                
-                foreach ($input['cart'] as $item) {
-                    $SID = intval($item['SID']);
-                    $quantity = intval($item['quantity'] ?? 1);
-                    
-                    $stmt = $conn->prepare("INSERT INTO tbltempcart (sessionId, SID, quantity) VALUES (?, ?, ?)");
-                    $stmt->bind_param("sii", $sessionId, $SID, $quantity);
+                if (isset($_SESSION['username'])) {
+                    $user_name = $_SESSION['username'];
+                    $stmt = $mysqli->prepare("DELETE FROM cart_orders WHERE user_name = ? AND SID = ? AND status = 'pending'");
+                    $stmt->bind_param("si", $user_name, $SID);
                     $stmt->execute();
+                    $stmt->close();
+                    $response = ['status' => 'success'];
+                    // Notify realtime server
+                    $payload = json_encode([
+                        'user' => $user_name
+                    ]);
+                    $opts = [
+                        'http' => [
+                            'method' => 'POST',
+                            'header' => "Content-Type: application/json\r\n",
+                            'content' => $payload
+                        ]
+                    ];
+                    @file_get_contents('http://localhost:3000/cart-update', false, stream_context_create($opts));
+                } else {
+                    $sessionId = session_id();
+                    $stmt = $mysqli->prepare("DELETE FROM tbltempcart WHERE sessionId = ? AND SID = ?");
+                    $stmt->bind_param("si", $sessionId, $SID);
+                    $stmt->execute();
+                    $stmt->close();
+                    $response = ['status' => 'success'];
+                    // Notify realtime server
+                    $payload = json_encode([
+                        'user' => $sessionId
+                    ]);
+                    $opts = [
+                        'http' => [
+                            'method' => 'POST',
+                            'header' => "Content-Type: application/json\r\n",
+                            'content' => $payload
+                        ]
+                    ];
+                    @file_get_contents('http://localhost:3000/cart-update', false, stream_context_create($opts));
                 }
-                $response = ['status' => 'success'];
             }
             break;
             
@@ -60,5 +89,5 @@ try {
 }
 
 echo json_encode($response);
-$conn->close();
+$mysqli->close();
 ?>

@@ -1,5 +1,4 @@
-
-  /* deepseek */
+/* deepseek */
   .cart-container {
     display: flex;
     flex-wrap: wrap;
@@ -25,6 +24,7 @@
     align-items: center;
     padding: 1rem 0;
     border-bottom: 1px solid #eee;
+    justify-content: space-between;
 }
 
 .cart-item-image {
@@ -39,6 +39,12 @@
     flex: 1;
 }
 
+.cart-item-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+}
+
 .cart-item-actions button {
     background: none;
     border: none;
@@ -51,6 +57,12 @@
     font-weight: bold;
     min-width: 80px;
     text-align: right;
+}
+
+.cart-item .item-qty {
+    margin: 0 1rem;
+    font-size: 1rem;
+    color: #333;
 }
 
 .checkout-btn {

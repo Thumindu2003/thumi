@@ -24,10 +24,23 @@ if (!isset($conn) || $conn === null || $conn->connect_error) {
 // Handle service deletion
 if (isset($_GET['delete'])) {
     $sid = $_GET['delete'];
-    $stmt = $conn->prepare("DELETE FROM tblservice WHERE SID = ?");
-    $stmt->bind_param("i", $sid);
-    $stmt->execute();
-    $_SESSION['message'] = "Service deleted successfully!";
+    if (is_numeric($sid)) {
+        // Delete all cart_orders entries for this service
+        $stmt_cart = $conn->prepare("DELETE FROM cart_orders WHERE SID = ?");
+        $stmt_cart->bind_param("i", $sid);
+        $stmt_cart->execute();
+        $stmt_cart->close();
+
+        // Delete the service itself
+        $stmt = $conn->prepare("DELETE FROM tblservice WHERE SID = ?");
+        $stmt->bind_param("i", $sid);
+        $stmt->execute();
+        $stmt->close();
+
+        $_SESSION['message'] = "Service deleted successfully!";
+    } else {
+        $_SESSION['message'] = "Invalid service ID.";
+    }
     header("Location: admin_services.php");
     exit();
 }

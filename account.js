@@ -111,14 +111,6 @@ function validateLoginForm() {
     'Please enter a valid username (min 5 chars with letters and numbers).'
   );
 
-  // Validate Password
-  isValid = isValid && validateField(
-    document.getElementById('loginPassword'),
-    document.getElementById('loginPasswordError'),
-    validatePassword,
-    'Password must contain uppercase, lowercase, and numbers.'
-  );
-
   if (isValid) {
     alert('Login successful!');
   }

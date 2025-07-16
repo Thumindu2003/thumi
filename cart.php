@@ -1,5 +1,28 @@
 <?php
+session_start();
 require_once 'connection.php';
+
+if (!isset($_SESSION['username'])) {
+    echo "<p>Please log in to view your cart.</p>";
+    exit;
+}
+
+$user_name = $_SESSION['username'];
+// Fetch all pending cart items for the user, only for existing services
+$sql = "SELECT c.SID, c.SName, s.SPrice 
+        FROM cart_orders c 
+        INNER JOIN tblservice s ON c.SID = s.SID 
+        WHERE c.user_name = ? AND c.status = 'pending'";
+$stmt = $mysqli->prepare($sql);
+$stmt->bind_param("s", $user_name);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$cart_items = [];
+while ($row = $result->fetch_assoc()) {
+    $cart_items[] = $row;
+}
+$stmt->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -33,7 +56,7 @@ require_once 'connection.php';
   <main>
     <section class="cart-container">
       <div class="cart-items" id="cartItems">
-        <!-- Cart items will be dynamically inserted here -->
+        <!-- Cart items will be rendered by JS -->
       </div>
       <div class="cart-summary">
         <h3>Order Summary</h3>
@@ -41,43 +64,91 @@ require_once 'connection.php';
           <p>Subtotal: <span id="subtotal">Rs.0</span></p>
           <p>Total: <span id="total">Rs.0</span></p>
         </div>
-        <button type="button" id="contactSellerBtn" class="checkout-btn"><i class="fas fa-envelope"></i> Contact Seller</button>
+        <button type="button" id="confirmOrderBtn" class="checkout-btn"><i class="fas fa-check"></i> Confirm Order</button>
       </div>
     </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
-  <script src="cart.js"></script>
   <script>
-    // Initialize cart count
-    document.addEventListener('DOMContentLoaded', function() {
-      updateCartCount();
-    });
-
-    function updateCartCount() {
+    function renderCartItems() {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
-      const count = cart.reduce((total, item) => total + (item.quantity || 1), 0);
-      document.getElementById('cart-count').textContent = count;
-    }
-
-    function displayCartItems() {
-      // You can implement this function to refresh the cart display after clearing
-      // For now, just clear the cart items container
-      document.getElementById('cartItems').innerHTML = '';
-      document.getElementById('subtotal').textContent = 'Rs.0';
-      document.getElementById('total').textContent = 'Rs.0';
-    }
-
-    document.getElementById('contactSellerBtn').onclick = function() {
-      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const cartItemsContainer = document.getElementById('cartItems');
       if (cart.length === 0) {
-        const notyf = new Notyf();
-        notyf.error('Your cart is empty. Please add items before contacting the seller.');
+        cartItemsContainer.innerHTML = '<p class="empty-cart">Your cart is empty</p>';
+        document.getElementById('cart-count').textContent = 0;
+        document.getElementById('subtotal').textContent = 'Rs.0';
+        document.getElementById('total').textContent = 'Rs.0';
         return;
       }
+      let itemsHTML = '';
+      let subtotal = 0;
+      cart.forEach((item, idx) => {
+        const qty = item.quantity || 1;
+        const itemTotal = item.SPrice * qty;
+        subtotal += itemTotal;
+        itemsHTML += `
+          <div class="cart-item" data-sid="${item.SID}">
+            <img src="${item.image}" alt="${item.SName}" class="cart-item-image">
+            <span>${item.SName}</span>
+            <span class="item-qty">
+              Qty: 
+              <button onclick="changeCartItemQty(${item.SID}, -1)" class="qty-btn">−</button>
+              <span id="qty-value-${item.SID}" style="margin:0 8px;">${qty}</span>
+              <button onclick="changeCartItemQty(${item.SID}, 1)" class="qty-btn">+</button>
+            </span>
+            <span class="item-total">Rs.${itemTotal.toFixed(2)}</span>
+            <div style="margin-left:auto;">
+              <button class="remove-cart-item" onclick="removeCartItem(${item.SID})"><i class="fas fa-trash"></i> Remove</button>
+            </div>
+          </div>
+        `;
+      });
+      cartItemsContainer.innerHTML = itemsHTML;
+      document.getElementById('cart-count').textContent = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+      document.getElementById('subtotal').textContent = 'Rs.' + subtotal.toFixed(2);
+      document.getElementById('total').textContent = 'Rs.' + subtotal.toFixed(2);
+    }
 
+    function removeCartItem(SID) {
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const idx = cart.findIndex(item => item.SID === SID);
+      if (idx !== -1) {
+        if ((cart[idx].quantity || 1) > 1) {
+          cart[idx].quantity -= 1;
+        } else {
+          cart.splice(idx, 1);
+        }
+        localStorage.setItem('cart', JSON.stringify(cart));
+        renderCartItems();
+        new Notyf().success('Item removed from cart.');
+      }
+    }
+
+    function changeCartItemQty(SID, delta) {
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const idx = cart.findIndex(item => item.SID === SID);
+      if (idx !== -1) {
+        let newQty = (cart[idx].quantity || 1) + delta;
+        if (newQty < 1) {
+          new Notyf().error('Quantity must be at least 1.');
+          return;
+        }
+        cart[idx].quantity = newQty;
+        localStorage.setItem('cart', JSON.stringify(cart));
+        renderCartItems();
+        new Notyf().success('Quantity updated.');
+      }
+    }
+
+    document.getElementById('confirmOrderBtn').onclick = function() {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      if (cart.length === 0) {
+        new Notyf().error('Your cart is empty. Please add items before confirming the order.');
+        return;
+      }
       const total = document.getElementById('total').textContent.replace('Rs.', '');
-      fetch('contact_seller.php', {
+      fetch('save_order.php', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
@@ -90,21 +161,26 @@ require_once 'connection.php';
         const notyf = new Notyf();
         if (data.success) {
           notyf.success(data.message);
-          // Clear the cart after successful submission
           localStorage.removeItem('cart');
-          displayCartItems();
-          updateCartCount();
+          document.getElementById('cart-count').textContent = 0;
+          document.getElementById('cartItems').innerHTML = '<p class="empty-cart">Your cart is empty</p>';
+          document.getElementById('subtotal').textContent = 'Rs.0';
+          document.getElementById('total').textContent = 'Rs.0';
         } else {
           notyf.error(data.message);
         }
       })
       .catch(error => {
-        const notyf = new Notyf();
-        notyf.error('An error occurred while contacting the seller.');
+        new Notyf().error('An error occurred while confirming the order.');
         console.error('Error:', error);
       });
     };
+
+    // Initial render
+    renderCartItems();
   </script>
+<?php
+$mysqli->close();
+?>
 </body>
 </html>
-<?php $conn->close(); ?>

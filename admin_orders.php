@@ -25,11 +25,15 @@ if (isset($_POST['update_status'])) {
 // Handle order deletion
 if (isset($_GET['delete'])) {
     $orderId = $_GET['delete'];
-    $stmt = $conn->prepare("DELETE FROM tblorders WHERE order_id = ?");
-    $stmt->bind_param("i", $orderId);
-    $stmt->execute();
-    
-    $_SESSION['message'] = "Order deleted successfully!";
+    if (is_numeric($orderId)) {
+        $stmt = $conn->prepare("DELETE FROM tblorders WHERE order_id = ?");
+        $stmt->bind_param("i", $orderId);
+        $stmt->execute();
+        $stmt->close();
+        $_SESSION['message'] = "Order deleted successfully!";
+    } else {
+        $_SESSION['message'] = "Invalid order ID.";
+    }
     header("Location: admin_orders.php");
     exit();
 }
