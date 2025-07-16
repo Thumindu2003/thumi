@@ -1,10 +1,19 @@
 <?php
+/// Start session only if not already started
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
+}
+
+// Add this line to define the loggedIn status
+$loggedIn = isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true;
+
 include "connection.php";
 
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+  die("Connection failed: " . $conn->connect_error);
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,19 +26,22 @@ if ($conn->connect_error) {
 </head>
 <body>
   <header>
-    <nav class="navbar">
+  <nav class="navbar">
       <div class="nav-left">
           <img src="Pictures/logo pangolin.png" alt="Pangolin Creations Logo" class="logo">
       </div>
       <div class="nav-right">
-          <ul class="nav-links">
-              <li><a href="index.php">Home</a></li>
-              <li><a href="services.php">Services</a></li>
-              <li><a href="cart.php">Cart <span id="cart-count" class="cart-count">0</span></a></li>
-              <li><a href="about.php">About Us</a></li>
-              <li><a href="contact.php">Contact</a></li>
-              <li><a href="account.php">Account</a></li>
-          </ul>
+        <ul class="nav-links">
+          <li><a href="index.php">Home</a></li>
+          <li><a href="services.php">Services</a></li>
+          <li><a href="cart.php">Cart <span id="cart-count" class="cart-count">0</span></a></li>
+          <li><a href="about.php">About Us</a></li>
+          <li><a href="contact.php">Contact</a></li>
+          <?php if(!$loggedIn): ?>
+            <li><a href="account.php">Account</a></li>
+          <?php endif; ?>
+        </ul>
+        <?php include 'profile_dropdown.php'; ?>
       </div>
     </nav>
   </header>

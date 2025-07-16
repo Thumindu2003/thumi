@@ -19,16 +19,15 @@ require_once 'connection.php';
           <img src="Pictures/logo pangolin.png" alt="Pangolin Creations Logo" class="logo">
       </div>
       <div class="nav-right">
-          <ul class="nav-links">
-              <li><a href="index.php">Home</a></li>
-              <li><a href="services.php">Services</a></li>
-              <li><a href="cart.php">Cart <span id="cart-count" class="cart-count">0</span></a></li>
-              <li><a href="about.php">About Us</a></li>
-              <li><a href="contact.php">Contact</a></li>
-              <li><a href="account.php">Account</a></li>
-          </ul>
-      </div>
-    </nav>
+  <ul class="nav-links">
+    <li><a href="index.php">Home</a></li>
+    <li><a href="services.php">Services</a></li>
+    <li><a href="cart.php">Cart <span id="cart-count" class="cart-count">0</span></a></li>
+    <li><a href="about.php">About Us</a></li>
+    <li><a href="contact.php">Contact</a></li>
+  </ul>
+  <?php include 'profile_dropdown.php'; ?>
+</div>
   </header>
 
   <main>
@@ -42,7 +41,7 @@ require_once 'connection.php';
           <p>Subtotal: <span id="subtotal">Rs.0</span></p>
           <p>Total: <span id="total">Rs.0</span></p>
         </div>
-        <button class="checkout-btn" onclick="contactSeller()"><i class="fas fa-phone"></i> Contact Seller</button>
+        <button type="button" id="contactSellerBtn" class="checkout-btn"><i class="fas fa-envelope"></i> Contact Seller</button>
       </div>
     </section>
   </main>
@@ -52,10 +51,59 @@ require_once 'connection.php';
   <script>
     // Initialize cart count
     document.addEventListener('DOMContentLoaded', function() {
+      updateCartCount();
+    });
+
+    function updateCartCount() {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
       const count = cart.reduce((total, item) => total + (item.quantity || 1), 0);
       document.getElementById('cart-count').textContent = count;
-    });
+    }
+
+    function displayCartItems() {
+      // You can implement this function to refresh the cart display after clearing
+      // For now, just clear the cart items container
+      document.getElementById('cartItems').innerHTML = '';
+      document.getElementById('subtotal').textContent = 'Rs.0';
+      document.getElementById('total').textContent = 'Rs.0';
+    }
+
+    document.getElementById('contactSellerBtn').onclick = function() {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      if (cart.length === 0) {
+        const notyf = new Notyf();
+        notyf.error('Your cart is empty. Please add items before contacting the seller.');
+        return;
+      }
+
+      const total = document.getElementById('total').textContent.replace('Rs.', '');
+      fetch('contact_seller.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          cart: cart,
+          total: total
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        const notyf = new Notyf();
+        if (data.success) {
+          notyf.success(data.message);
+          // Clear the cart after successful submission
+          localStorage.removeItem('cart');
+          displayCartItems();
+          updateCartCount();
+        } else {
+          notyf.error(data.message);
+        }
+      })
+      .catch(error => {
+        const notyf = new Notyf();
+        notyf.error('An error occurred while contacting the seller.');
+        console.error('Error:', error);
+      });
+    };
   </script>
 </body>
 </html>

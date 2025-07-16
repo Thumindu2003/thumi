@@ -13,7 +13,7 @@ if (isset($_POST['update_status'])) {
     $orderId = $_POST['order_id'];
     $status = $_POST['status'];
     
-    $stmt = $mysqli->prepare("UPDATE tblorders SET status = ? WHERE order_id = ?");
+    $stmt = $conn->prepare("UPDATE tblorders SET status = ? WHERE order_id = ?");
     $stmt->bind_param("si", $status, $orderId);
     $stmt->execute();
     
@@ -25,7 +25,7 @@ if (isset($_POST['update_status'])) {
 // Handle order deletion
 if (isset($_GET['delete'])) {
     $orderId = $_GET['delete'];
-    $stmt = $mysqli->prepare("DELETE FROM tblorders WHERE order_id = ?");
+    $stmt = $conn->prepare("DELETE FROM tblorders WHERE order_id = ?");
     $stmt->bind_param("i", $orderId);
     $stmt->execute();
     
@@ -35,7 +35,7 @@ if (isset($_GET['delete'])) {
 }
 
 // Get all orders
-$orders = $mysqli->query("SELECT * FROM tblorders ORDER BY order_date DESC")->fetch_all(MYSQLI_ASSOC);
+$orders = $conn->query("SELECT * FROM tblorders ORDER BY order_date DESC")->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <!DOCTYPE html>

@@ -14,17 +14,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['slideshow_image'])) 
     $position = $_POST['position'];
     
     // Check if position already exists
-    $checkStmt = $mysqli->prepare("SELECT id FROM tblslideshow WHERE position = ?");
+    $checkStmt = $conn->prepare("SELECT id FROM tblslideshow WHERE position = ?");
     $checkStmt->bind_param("i", $position);
     $checkStmt->execute();
     $checkStmt->store_result();
     
     if ($checkStmt->num_rows > 0) {
         // Update existing image
-        $stmt = $mysqli->prepare("UPDATE tblslideshow SET image = ? WHERE position = ?");
+        $stmt = $conn->prepare("UPDATE tblslideshow SET image = ? WHERE position = ?");
     } else {
         // Insert new image
-        $stmt = $mysqli->prepare("INSERT INTO tblslideshow (image, position) VALUES (?, ?)");
+        $stmt = $conn->prepare("INSERT INTO tblslideshow (image, position) VALUES (?, ?)");
     }
     
     $stmt->bind_param("si", $image, $position);
@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['slideshow_image'])) 
 }
 
 // Get current slideshow images
-$slides = $mysqli->query("SELECT * FROM tblslideshow ORDER BY position")->fetch_all(MYSQLI_ASSOC);
+$slides = $conn->query("SELECT * FROM tblslideshow ORDER BY position")->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <!DOCTYPE html>

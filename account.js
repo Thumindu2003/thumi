@@ -5,10 +5,10 @@ function validateUsername(username) {
 }
 
 function validatePassword(password) {
-  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,14}$/;
+  // Minimum 8 characters, at least one letter and one number
+  const regex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
   return regex.test(password);
 }
-
 function validatePhone(phone) {
   const regex = /^07[0-9]{8}$/; // Matches Sri Lankan phone numbers
   return regex.test(phone);
@@ -40,7 +40,7 @@ function validateSignUpForm() {
   let isValid = true;
 
   // Validate Name with Initial
-  isValid &= validateField(
+  isValid = isValid && validateField(
     document.getElementById('nameWithInitial'),
     document.getElementById('nameError'),
     validateName,
@@ -48,7 +48,7 @@ function validateSignUpForm() {
   );
 
   // Validate Email
-  isValid &= validateField(
+  isValid = isValid && validateField(
     document.getElementById('email'),
     document.getElementById('emailError'),
     validateEmail,
@@ -56,7 +56,7 @@ function validateSignUpForm() {
   );
 
   // Validate Phone Number
-  isValid &= validateField(
+  isValid = isValid && validateField(
     document.getElementById('phone'),
     document.getElementById('phoneError'),
     validatePhone,
@@ -64,7 +64,7 @@ function validateSignUpForm() {
   );
 
   // Validate Username
-  isValid &= validateField(
+  isValid = isValid && validateField(
     document.getElementById('signupUsername'),
     document.getElementById('usernameError'),
     validateUsername,
@@ -72,7 +72,7 @@ function validateSignUpForm() {
   );
 
   // Validate Password
-  isValid &= validateField(
+  isValid = isValid && validateField(
     document.getElementById('signupPassword'),
     document.getElementById('passwordError'),
     validatePassword,
@@ -104,7 +104,7 @@ function validateLoginForm() {
   let isValid = true;
 
   // Validate Username
-  isValid &= validateField(
+  isValid = isValid && validateField(
     document.getElementById('loginUsername'),
     document.getElementById('loginUsernameError'),
     validateUsername,
@@ -112,7 +112,7 @@ function validateLoginForm() {
   );
 
   // Validate Password
-  isValid &= validateField(
+  isValid = isValid && validateField(
     document.getElementById('loginPassword'),
     document.getElementById('loginPasswordError'),
     validatePassword,
@@ -229,4 +229,4 @@ document.addEventListener('DOMContentLoaded', () => {
   if (loginLink) {
     loginLink.addEventListener('click', showLogin);
   }
-});
+})

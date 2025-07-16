@@ -12,16 +12,20 @@ if (!isset($_SESSION['admin_loggedin']) || $_SESSION['admin_loggedin'] !== true)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = $_POST['name'];
     $price = $_POST['price'];
-    $description = $_POST['description'] ?? '';
+    
     
     // Handle image upload
     $image = null;
     if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
         $image = file_get_contents($_FILES['image']['tmp_name']);
     }
-    
-    $stmt = $mysqli->prepare("INSERT INTO tblservice (SName, SPrice, SDescription, image) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("sdss", $name, $price, $description, $image);
+    try {
+        $image = base64_encode($image);
+    } catch (Exception $e) {
+        $error = "Error processing image: " . $e->getMessage();
+    }
+    $stmt = $conn->prepare("INSERT INTO tblservice (SName, SPrice, image) VALUES (?, ?, ?)");
+    $stmt->bind_param("sds", $name, $price, $image);
     
     if ($stmt->execute()) {
         $_SESSION['message'] = "Service added successfully!";
@@ -73,10 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="number" id="price" name="price" step="0.01" min="0" required>
           </div>
           
-          <div class="form-group">
-            <label for="description">Description</label>
-            <textarea id="description" name="description" rows="3"></textarea>
-          </div>
+          
           
           <div class="form-group">
             <label for="image">Service Image</label>

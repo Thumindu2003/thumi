@@ -79,15 +79,16 @@
         <img src="Pictures/logo pangolin.png" alt="Pangolin Creations Logo" class="logo">
       </div>
       <div class="nav-right">
-        <ul class="nav-links">
-          <li><a href="index.php">Home</a></li>
-          <li><a href="services.php">Services</a></li>
-          <li><a href="cart.php">Cart</a></li>
-          <li><a href="about.php">About Us</a></li>
-          <li><a href="contact.php">Contact</a></li>
-          <li><a href="account.php">Account</a></li>
-        </ul>
-      </div>
+  <ul class="nav-links">
+    <li><a href="index.php">Home</a></li>
+    <li><a href="services.php">Services</a></li>
+    <li><a href="cart.php">Cart <span id="cart-count" class="cart-count">0</span></a></li>
+    <li><a href="about.php">About Us</a></li>
+    <li><a href="contact.php">Contact</a></li>
+    <li><a href="account.php">Account</a></li>
+  </ul>
+  
+</div>
     </nav>
   </header>
   

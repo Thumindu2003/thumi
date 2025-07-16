@@ -56,43 +56,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup'])) {
 
 // Handle Login Form Submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
-    $loginUsername = $_POST['loginUsername'];
-    $loginPassword = $_POST['loginPassword'];
+  $loginUsername = $_POST['loginUsername'];
+  $loginPassword = $_POST['loginPassword'];
 
-    $query = "SELECT Password, role FROM tblUser WHERE User_name = ?";
-    $stmt = $mysqli->prepare($query);
-    if (!$stmt) {
-        die("Error preparing statement: " . $mysqli->error);
-    }
-    $stmt->bind_param("s", $loginUsername);
-    $stmt->execute();
-    $stmt->store_result();
+  // Updated query to include Email
+  $query = "SELECT Password, role, Email FROM tblUser WHERE User_name = ?";
+  $stmt = $mysqli->prepare($query);
+  
+  if (!$stmt) {
+      die("Error preparing statement: " . $mysqli->error);
+  }
+  
+  $stmt->bind_param("s", $loginUsername);
+  $stmt->execute();
+  $stmt->store_result();
 
-    if ($stmt->num_rows > 0) {
-        $stmt->bind_result($hashedPassword, $role);
-        $stmt->fetch();
+  if ($stmt->num_rows > 0) {
+      // Updated to include Email in bind_result
+      $stmt->bind_result($hashedPassword, $role, $email);
+      $stmt->fetch();
 
-        if (password_verify($loginPassword, $hashedPassword)) {
-            session_regenerate_id(true);
-            $_SESSION['loggedin'] = true;
-            $_SESSION['username'] = $loginUsername;
+      if (password_verify($loginPassword, $hashedPassword)) {
+          session_regenerate_id(true);
+          $_SESSION['loggedin'] = true;
+          $_SESSION['username'] = $loginUsername;
+          $_SESSION['email'] = $email; // Now properly set
+          $_SESSION['role'] = $role;
 
-            if ($role === 'admin') {
-                header("Location: admin_dashboard.php");
-            } else {
-                header("Location: dashboard.php");
-            }
-            exit();
-        } else {
-            $loginError = "Invalid username or password.";
-        }
-    } else {
-        $loginError = "Invalid username or password.";
-    }
-    $stmt->close();
+          if ($role === 'admin') {
+              header("Location: admin_dashboard.php");
+          } else {
+              header("Location: index.php");
+          }
+          exit();
+      } else {
+          $loginError = "Invalid username or password.";
+      }
+  } else {
+      $loginError = "Invalid username or password.";
+  }
+  $stmt->close();
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -205,15 +210,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             <img src="Pictures/logo pangolin.png" alt="Pangolin Creations Logo" class="logo">
         </div>
         <div class="nav-right">
-            <ul class="nav-links">
-                <li><a href="index.php">Home</a></li>
-                <li><a href="services.php">Services</a></li>
-                <li><a href="cart.php">Cart</a></li>
-                <li><a href="about.php">About Us</a></li>
-                <li><a href="contact.php">Contact</a></li>
-                <li><a href="account.php">Account</a></li>
-            </ul>
-        </div>
+  <ul class="nav-links">
+    <li><a href="index.php">Home</a></li>
+    <li><a href="services.php">Services</a></li>
+    <li><a href="cart.php">Cart <span id="cart-count" class="cart-count">0</span></a></li>
+    <li><a href="about.php">About Us</a></li>
+    <li><a href="contact.php">Contact</a></li>
+    <li><a href="account.php">Account</a></li>
+  </ul>
+ 
+</div>
     </nav>
     </header>
     

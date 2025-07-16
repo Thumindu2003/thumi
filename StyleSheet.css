@@ -111,10 +111,8 @@ footer {
 @media (max-width: 768px) {
   .navbar {
       flex-direction: column;
-      height: 100vh; /* Full height of the viewport */
-      justify-content: center; /* Center vertically */
-      align-items: center; /* Center horizontally */
-      transform: translateX(-100px); /* Move slightly to the left */
+      height: auto;
+      padding: 20px 0;
   }
 
   .nav-left, .nav-right {
@@ -123,7 +121,8 @@ footer {
 
   .logo {
       width: 300px; /* Slightly smaller on mobile */
-      margin-bottom: 20px; /* Add spacing below the logo */
+      margin-bottom: -100px;
+      margin-top: -60px;
   }
 
   .nav-links {
@@ -133,6 +132,7 @@ footer {
 
   .nav-links li {
       margin: 10px 0;
+     
   }
 
   .nav-links a {

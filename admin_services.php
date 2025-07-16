@@ -8,10 +8,23 @@ if (!isset($_SESSION['admin_loggedin']) || $_SESSION['admin_loggedin'] !== true)
     exit();
 }
 
+// Improved database connection error handling
+if (!isset($conn) || $conn === null || $conn->connect_error) {
+    echo "<div style='color:red;'>";
+    echo "Cannot display admin services: ";
+    if (isset($conn) && $conn->connect_error) {
+        echo "Database connection failed: " . htmlspecialchars($conn->connect_error);
+    } else {
+        echo "Database connection is not available.";
+    }
+    echo "</div>";
+    exit();
+}
+
 // Handle service deletion
 if (isset($_GET['delete'])) {
     $sid = $_GET['delete'];
-    $stmt = $mysqli->prepare("DELETE FROM tblservice WHERE SID = ?");
+    $stmt = $conn->prepare("DELETE FROM tblservice WHERE SID = ?");
     $stmt->bind_param("i", $sid);
     $stmt->execute();
     $_SESSION['message'] = "Service deleted successfully!";
@@ -20,7 +33,7 @@ if (isset($_GET['delete'])) {
 }
 
 // Get all services
-$services = $mysqli->query("SELECT * FROM tblservice ORDER BY SID DESC")->fetch_all(MYSQLI_ASSOC);
+$services = $conn->query("SELECT * FROM tblservice ORDER BY SID DESC")->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <!DOCTYPE html>

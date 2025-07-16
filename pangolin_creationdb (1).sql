@@ -41,9 +41,11 @@ CREATE TABLE IF NOT EXISTS `tbladmin` (
 -- Dumping data for table `tbladmin`
 --
 
+-- It is recommended to store only hashed passwords in the `password` column.
+-- The column is already long enough for secure hashes.
 INSERT INTO `tbladmin` (`id`, `username`, `password`, `created_at`) VALUES
 (1, 'admin', '*A0F874BC7F54EE086FCE60A37CE7887D8B31086B', '2025-07-03 06:49:47'),
-(2, 'thumi', 'thumi', '2025-07-03 07:04:45');
+(2, 'thumi', '$2y$10$examplehashedpassword', '2025-07-03 07:04:45');
 
 -- --------------------------------------------------------
 
