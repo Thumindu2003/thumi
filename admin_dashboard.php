@@ -40,6 +40,19 @@ function getCompletedOrdersCount($conn) {
     return $count;
 }
 
+// Helper function to get contact number by username
+function getUserContact($conn, $username) {
+    if (!$username) return '';
+    $stmt = $conn->prepare("SELECT contactno FROM tbluser WHERE username = ? LIMIT 1");
+    if (!$stmt) return '';
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $stmt->bind_result($contact);
+    $stmt->fetch();
+    $stmt->close();
+    return $contact ?: '';
+}
+
 // Get stats for dashboard
 $servicesCount = $conn->query("SELECT COUNT(*) FROM tblservice")->fetch_row()[0];
 $pendingOrders = getPendingOrdersCount($conn);
@@ -57,7 +70,8 @@ if ($result1 && $result1->num_rows > 0) {
             'service_name' => $row['service_name'],
             'total_amount' => $row['total_amount'],
             'order_date' => $row['order_date'],
-            'status' => $row['status']
+            'status' => $row['status'],
+            'user_name' => $row['customer_name'] // assuming customer_name is username for tblorders
         ];
     }
 }
@@ -82,7 +96,8 @@ if ($result2 && $result2->num_rows > 0) {
             'service_name' => $row['SName'] . ' x' . $row['quantity'],
             'total_amount' => $amount,
             'order_date' => $row['order_date'],
-            'status' => $row['status']
+            'status' => $row['status'],
+            'user_name' => $row['user_name']
         ];
     }
 }
@@ -119,6 +134,10 @@ usort($recentOrders, function($a, $b) {
       </header>
       
       <main class="admin-main">
+        <!-- Search box for recent orders -->
+        <div style="margin-bottom: 20px;">
+            <input type="text" id="dashboardOrderSearchInput" placeholder="Search by customer name..." style="padding:8px;width:250px;border-radius:4px;border:1px solid #ccc;">
+        </div>
         <!-- Stats Cards -->
         <div class="stats-cards">
           <div class="stat-card">
@@ -155,7 +174,7 @@ usort($recentOrders, function($a, $b) {
         <!-- Recent Orders -->
         <div class="recent-orders">
           <h2>Recent Orders</h2>
-          <table>
+          <table id="dashboardOrdersTable">
             <thead>
               <tr>
                 <th>Order ID</th>
@@ -164,12 +183,13 @@ usort($recentOrders, function($a, $b) {
                 <th>Amount</th>
                 <th>Date</th>
                 <th>Status</th>
+                <th>Contact</th>
               </tr>
             </thead>
             <tbody>
               <?php if (count($recentOrders) === 0): ?>
                 <tr>
-                  <td colspan="6" style="text-align:center;">No recent orders found.</td>
+                  <td colspan="7" style="text-align:center;">No recent orders found.</td>
                 </tr>
               <?php else: ?>
                 <?php foreach ($recentOrders as $order): ?>
@@ -188,6 +208,12 @@ usort($recentOrders, function($a, $b) {
                   </td>
                   <td><?php echo date('M d, Y', strtotime($order['order_date'])); ?></td>
                   <td><span class="status-badge <?php echo htmlspecialchars($order['status']); ?>"><?php echo ucfirst($order['status']); ?></span></td>
+                  <td>
+                    <?php
+                      $contact = getUserContact($conn, $order['user_name']);
+                      echo $contact ? htmlspecialchars($contact) : '-';
+                    ?>
+                  </td>
                 </tr>
                 <?php endforeach; ?>
               <?php endif; ?>
@@ -195,6 +221,18 @@ usort($recentOrders, function($a, $b) {
           </table>
         </div>
       </main>
+      <script>
+        // Filter recent orders table by customer name (username or full name)
+        document.getElementById('dashboardOrderSearchInput').addEventListener('input', function() {
+            const filter = this.value.trim().toLowerCase();
+            const rows = document.querySelectorAll('#dashboardOrdersTable tbody tr');
+            rows.forEach(row => {
+                const customerCell = row.querySelector('td:nth-child(2)');
+                const customer = customerCell ? customerCell.textContent.trim().toLowerCase() : '';
+                row.style.display = customer.includes(filter) ? '' : 'none';
+            });
+        });
+      </script>
     </div>
   </div>
 </body>

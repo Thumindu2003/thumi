@@ -11,8 +11,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup'])) {
     $password = $_POST['signupPassword'];
     $confirmPassword = $_POST['confirmPassword'];
 
-    // Validate passwords match
-    if ($password !== $confirmPassword) {
+    // Password validation: min 8 chars, 1 uppercase, 1 lowercase, 1 symbol
+    $passwordPattern = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}$/';
+    if (!preg_match($passwordPattern, $password)) {
+        $signupError = "Password must be at least 8 characters, include uppercase, lowercase, and a symbol.";
+    } elseif ($password !== $confirmPassword) {
         $signupError = "Passwords do not match.";
     } else {
         // Check if username or email already exists
@@ -126,6 +129,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
       display: block;
       margin-top: 0.25rem;
     }
+
+    .password-hint {
+      color: #6c757d;
+      font-size: 0.8rem;
+      margin-top: 0.25rem;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
   </style>
   <script>
     // JavaScript function to show the Sign-Up page
@@ -139,6 +150,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
       document.getElementById('signup-page').style.display = 'none';
       document.getElementById('login-page').style.display = 'block';
     }
+
+    // Password validation for sign-up (client-side)
+    document.addEventListener('DOMContentLoaded', function() {
+      var signupForm = document.getElementById('signupForm');
+      if (signupForm) {
+        signupForm.addEventListener('submit', function(e) {
+          var password = document.getElementById('signupPassword').value;
+          var confirmPassword = document.getElementById('confirmPassword').value;
+          var passwordError = document.getElementById('passwordError');
+          var confirmPasswordError = document.getElementById('confirmPasswordError');
+          var pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}$/;
+          var valid = true;
+
+          passwordError.style.display = 'none';
+          confirmPasswordError.style.display = 'none';
+
+          if (!pattern.test(password)) {
+            passwordError.textContent = "Password must be at least 8 characters, include uppercase, lowercase, and a symbol.";
+            passwordError.style.display = 'block';
+            valid = false;
+          }
+          if (password !== confirmPassword) {
+            confirmPasswordError.textContent = "Passwords do not match.";
+            confirmPasswordError.style.display = 'block';
+            valid = false;
+          }
+          if (!valid) e.preventDefault();
+        });
+      }
+    });
   </script>
   <script src="account.js"></script>
 </head>
@@ -272,6 +313,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             <div class="input-group">
               <i class="fas fa-key input-icon"></i>
               <input type="password" name="signupPassword" id="signupPassword" placeholder="Password" required>
+              <span class="password-hint">
+                Password must be at least 8 characters, include uppercase, lowercase, and a symbol.
+              </span>
               <div id="passwordError" class="error-message"></div>
             </div>
           </div>

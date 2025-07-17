@@ -114,12 +114,15 @@ if ($cart_result === false) {
           <div class="alert alert-success"><?php echo $_SESSION['message']; unset($_SESSION['message']); ?></div>
         <?php endif; ?>
         
-       
+        <!-- Search box -->
+        <div style="margin-bottom: 20px;">
+            <input type="text" id="orderSearchInput" placeholder="Search by username or full name..." style="padding:8px;width:250px;border-radius:4px;border:1px solid #ccc;">
+        </div>
 
         <!-- Updated: cart_orders table -->
         <div class="orders-table" style="margin-top:40px;">
          
-          <table>
+          <table id="ordersTable">
             <thead>
               <tr>
                 <th>Order ID</th>
@@ -185,6 +188,19 @@ if ($cart_result === false) {
     
     // Run cleanup on page load
     document.addEventListener('DOMContentLoaded', checkCompletedOrders);
+
+    // Filter orders table by username or full name
+    document.getElementById('orderSearchInput').addEventListener('input', function() {
+        const filter = this.value.trim().toLowerCase();
+        const rows = document.querySelectorAll('#ordersTable tbody tr');
+        rows.forEach(row => {
+            const usernameCell = row.querySelector('td:nth-child(2)');
+            const fullnameCell = row.querySelector('td:nth-child(3)');
+            const username = usernameCell ? usernameCell.textContent.trim().toLowerCase() : '';
+            const fullname = fullnameCell ? fullnameCell.textContent.trim().toLowerCase() : '';
+            row.style.display = (username.includes(filter) || fullname.includes(filter)) ? '' : 'none';
+        });
+    });
   </script>
 </body>
 </html>
