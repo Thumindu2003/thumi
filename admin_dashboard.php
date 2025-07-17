@@ -40,47 +40,44 @@ function getCompletedOrdersCount($conn) {
     return $count;
 }
 
-// Helper function to get contact number by username
-function getUserContact($conn, $username) {
-    if (!$username) return '';
-    $stmt = $conn->prepare("SELECT contactno FROM tbluser WHERE username = ? LIMIT 1");
-    if (!$stmt) return '';
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    $stmt->bind_result($contact);
-    $stmt->fetch();
-    $stmt->close();
-    return $contact ?: '';
-}
-
 // Get stats for dashboard
 $servicesCount = $conn->query("SELECT COUNT(*) FROM tblservice")->fetch_row()[0];
 $pendingOrders = getPendingOrdersCount($conn);
 $completedOrders = getCompletedOrdersCount($conn);
 
-// Fetch recent orders from tblorders
+// Fetch recent orders from tblorders with contact number and full name
 $recentOrders = [];
-$result1 = $conn->query("SELECT order_id, customer_name, service_name, total_amount, order_date, status FROM tblorders ORDER BY order_date DESC");
+$result1 = $conn->query("
+    SELECT o.order_id, o.user_name, o.service_name, o.total_amount, o.order_date, o.status, 
+           IFNULL(u.Contact, '') AS contactno,
+           IFNULL(u.FName, o.user_name) AS fullname
+    FROM tblorders o
+    LEFT JOIN tbluser u ON o.user_name = u.User_name
+    ORDER BY o.order_date DESC
+");
 if ($result1 && $result1->num_rows > 0) {
     $result1->data_seek(0); // Reset pointer
     while ($row = $result1->fetch_assoc()) {
         $recentOrders[] = [
             'order_id' => $row['order_id'],
-            'customer_name' => $row['customer_name'],
+            'customer_name' => $row['fullname'],
             'service_name' => $row['service_name'],
             'total_amount' => $row['total_amount'],
             'order_date' => $row['order_date'],
             'status' => $row['status'],
-            'user_name' => $row['customer_name'] // assuming customer_name is username for tblorders
+            'contactno' => $row['contactno']
         ];
     }
 }
 
-// Fetch recent cart_orders (show each service as a separate order)
+// Fetch recent cart_orders (show each service as a separate order) with contact number and full name
 $result2 = $conn->query("
-    SELECT co.order_id, co.user_name, co.SID, co.quantity, co.order_date, co.status, ts.SName, ts.SPrice
+    SELECT co.order_id, co.user_name, co.SID, co.quantity, co.order_date, co.status, ts.SName, ts.SPrice,
+           IFNULL(u.Contact, '') AS contactno,
+           IFNULL(u.FName, co.user_name) AS fullname
     FROM cart_orders co
     LEFT JOIN tblservice ts ON co.SID = ts.SID
+    LEFT JOIN tbluser u ON co.user_name = u.User_name
     ORDER BY co.order_date DESC
 ");
 if ($result2 && $result2->num_rows > 0) {
@@ -92,12 +89,12 @@ if ($result2 && $result2->num_rows > 0) {
         }
         $recentOrders[] = [
             'order_id' => 'CART-' . $row['order_id'],
-            'customer_name' => $row['user_name'],
+            'customer_name' => $row['fullname'],
             'service_name' => $row['SName'] . ' x' . $row['quantity'],
             'total_amount' => $amount,
             'order_date' => $row['order_date'],
             'status' => $row['status'],
-            'user_name' => $row['user_name']
+            'contactno' => $row['contactno']
         ];
     }
 }
@@ -209,10 +206,7 @@ usort($recentOrders, function($a, $b) {
                   <td><?php echo date('M d, Y', strtotime($order['order_date'])); ?></td>
                   <td><span class="status-badge <?php echo htmlspecialchars($order['status']); ?>"><?php echo ucfirst($order['status']); ?></span></td>
                   <td>
-                    <?php
-                      $contact = getUserContact($conn, $order['user_name']);
-                      echo $contact ? htmlspecialchars($contact) : '-';
-                    ?>
+                    <?php echo $order['contactno'] ? htmlspecialchars($order['contactno']) : '-'; ?>
                   </td>
                 </tr>
                 <?php endforeach; ?>
