@@ -45,11 +45,12 @@ $stmt->close();
   <ul class="nav-links">
     <li><a href="index.php">Home</a></li>
     <li><a href="services.php">Services</a></li>
-    <li><a href="cart.php">Cart <span id="cart-count" class="cart-count">0</span></a></li>
+    <li><a href="cart.php" class="current-page">Cart <span id="cart-count" class="cart-count">0</span></a></li>
     <li><a href="about.php">About Us</a></li>
     <li><a href="contact.php">Contact</a></li>
+    <?php include 'profile_dropdown.php'; ?>
   </ul>
-  <?php include 'profile_dropdown.php'; ?>
+  
 </div>
   </header>
 
@@ -84,12 +85,17 @@ $stmt->close();
       let itemsHTML = '';
       let subtotal = 0;
       cart.forEach((item, idx) => {
+        // Use service_image.php if image is not a file path
+        let imageSrc = item.image;
+        if (!/^Pictures\//.test(imageSrc) && !/^data:image\//.test(imageSrc) && !/^service_image\.php/.test(imageSrc)) {
+          imageSrc = 'service_image.php?sid=' + item.SID;
+        }
         const qty = item.quantity || 1;
         const itemTotal = item.SPrice * qty;
         subtotal += itemTotal;
         itemsHTML += `
           <div class="cart-item" data-sid="${item.SID}">
-            <img src="${item.image}" alt="${item.SName}" class="cart-item-image">
+            <img src="${imageSrc}" alt="${item.SName}" class="cart-item-image">
             <span>${item.SName}</span>
             <span class="item-qty">
               Qty: 

@@ -382,43 +382,4 @@
     margin-top: 20px;
   }
   
-  /* Slideshow Management */
-  .slideshow-positions {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-  }
   
-  .slide-position {
-    background-color: white;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  }
-  
-  .current-image img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 4px;
-    margin-bottom: 15px;
-  }
-  
-  .no-image {
-    text-align: center;
-    padding: 30px;
-    background-color: #f8f9fa;
-    border-radius: 4px;
-    margin-bottom: 15px;
-    color: #6c757d;
-  }
-  
-  .no-image i {
-    font-size: 40px;
-    margin-bottom: 10px;
-  }
-  
-  /* Service Thumbnail */
-  .service-thumbnail {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;}

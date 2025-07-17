@@ -57,12 +57,10 @@ if (isset($_GET['delete'])) {
     exit();
 }
 
-// Get all orders with user FName
+// Get all orders (no join with tblUser, since tblorders does not have user_name)
 $order_result = $conn->query("
-    SELECT o.*, u.FName AS user_fname
-    FROM tblorders o
-    LEFT JOIN tblUser u ON o.user_name = u.User_name
-    ORDER BY o.order_date DESC
+    SELECT * FROM tblorders
+    ORDER BY order_date DESC
 ");
 if ($order_result === false) {
     $orders = [];
@@ -116,58 +114,11 @@ if ($cart_result === false) {
           <div class="alert alert-success"><?php echo $_SESSION['message']; unset($_SESSION['message']); ?></div>
         <?php endif; ?>
         
-        <div class="orders-table">
-          <table>
-            <thead>
-              <tr>
-                <th>Order ID</th>
-                <th>User Name</th>
-                <th>Full Name</th>
-                <th>Customer</th>
-                <th>Contact</th>
-                <th>Email</th>
-                <th>Service</th>
-                <th>Amount</th>
-                <th>Date</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <?php foreach ($orders as $order): ?>
-              <tr>
-                <td>#<?php echo $order['order_id']; ?></td>
-                <td><?php echo htmlspecialchars($order['user_name'] ?? ''); ?></td>
-                <td><?php echo htmlspecialchars($order['user_fname'] ?? ''); ?></td>
-                <td><?php echo htmlspecialchars($order['customer_name']); ?></td>
-                <td><?php echo htmlspecialchars($order['customer_contact']); ?></td>
-                <td><?php echo htmlspecialchars($order['customer_email']); ?></td>
-                <td><?php echo htmlspecialchars($order['service_name'] ?? 'N/A'); ?></td>
-                <td>Rs.<?php echo number_format($order['total_amount'], 2); ?></td>
-                <td><?php echo date('M d, Y', strtotime($order['order_date'])); ?></td>
-                <td>
-                  <form method="POST" class="status-form">
-                    <input type="hidden" name="order_id" value="<?php echo $order['order_id']; ?>">
-                    <select name="status" onchange="this.form.submit()">
-                      <option value="pending" <?php echo $order['status'] === 'pending' ? 'selected' : ''; ?>>Pending</option>
-                      <option value="completed" <?php echo $order['status'] === 'completed' ? 'selected' : ''; ?>>Completed</option>
-                    </select>
-                    <input type="hidden" name="update_status" value="1">
-                  </form>
-                </td>
-                <td class="actions">
-                  <a href="admin_view_order.php?id=<?php echo $order['order_id']; ?>" class="btn btn-view"><i class="fas fa-eye"></i> View</a>
-                  <a href="admin_orders.php?delete=<?php echo $order['order_id']; ?>" class="btn btn-delete" onclick="return confirm('Are you sure you want to delete this order?')"><i class="fas fa-trash"></i> Delete</a>
-                </td>
-              </tr>
-              <?php endforeach; ?>
-            </tbody>
-          </table>
-        </div>
+       
 
         <!-- Updated: cart_orders table -->
         <div class="orders-table" style="margin-top:40px;">
-          <h2>Cart Orders</h2>
+         
           <table>
             <thead>
               <tr>

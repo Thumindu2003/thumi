@@ -34,15 +34,16 @@ if ($conn->connect_error) {
       <div class="nav-right">
         <ul class="nav-links">
           <li><a href="index.php">Home</a></li>
-          <li><a href="services.php">Services</a></li>
+          <li><a href="services.php" class="current-page">Services</a></li>
           <li><a href="cart.php">Cart <span id="cart-count" class="cart-count">0</span></a></li>
           <li><a href="about.php">About Us</a></li>
           <li><a href="contact.php">Contact</a></li>
           <?php if(!$loggedIn): ?>
             <li><a href="account.php">Account</a></li>
           <?php endif; ?>
+          <?php include 'profile_dropdown.php'; ?>
         </ul>
-        <?php include 'profile_dropdown.php'; ?>
+       
       </div>
     </nav>
   </header>
@@ -60,7 +61,11 @@ if ($conn->connect_error) {
 
       if ($result->num_rows > 0) {
           while ($row = $result->fetch_assoc()) {
-              $imageSrc = $row['image'] ? 'data:image/jpeg;base64,' . base64_encode($row['image']) : 'Pictures/default.jpg';
+              if (!empty($row['image'])) {
+                  $imageSrc = 'service_image.php?sid=' . $row['SID'];
+              } else {
+                  $imageSrc = 'Pictures/default.jpg';
+              }
               echo '
               <div class="product">
                 <img src="' . $imageSrc . '" alt="' . htmlspecialchars($row['SName']) . '" class="servipic">

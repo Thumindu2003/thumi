@@ -1,4 +1,6 @@
 <?php
+session_start();
+$loggedIn = isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -16,7 +18,6 @@
       margin: 0;
       padding: 0;
     }
-    
     
     
     h1 {
@@ -70,21 +71,25 @@
   </style>
 </head>
 <body>
-  <header>
+<header>
     <nav class="navbar">
       <div class="nav-left">
-        <img src="Pictures/logo pangolin.png" alt="Pangolin Creations Logo" class="logo">
+          <img src="Pictures/logo pangolin.png" alt="Pangolin Creations Logo" class="logo">
       </div>
       <div class="nav-right">
-    <ul class="nav-links">
-      <li><a href="index.php">Home</a></li>
-      <li><a href="services.php">Services</a></li>
-      <li><a href="cart.php">Cart <span id="cart-count" class="cart-count">0</span></a></li>
-      <li><a href="about.php">About Us</a></li>
-      <li><a href="contact.php">Contact</a></li>
-      <li><a href="account.php">Account</a></li>
-   
-</div>
+        <ul class="nav-links">
+          <li><a href="index.php">Home</a></li>
+          <li><a href="services.php">Services</a></li>
+          <li><a href="cart.php">Cart</a></li>
+          <li><a href="about.php">About Us</a></li>
+          <li><a href="contact.php" class="current-page">Contact</a></li>
+          <?php if(!$loggedIn): ?>
+            <li><a href="account.php">Account</a></li>
+          <?php endif; ?>
+          <?php include 'profile_dropdown.php'; ?>
+        </ul>
+        
+      </div>
     </nav>
   </header>
   
@@ -98,7 +103,7 @@
           <i class="fas fa-envelope"></i>
         </div>
         <div class="contact-info email-info">
-          <a href="pangolincreations@gmail.com">pangolincreations@gmail.com</a>
+          <a href="https://mail.google.com/mail/u/0/?hl=si#sent?compose=CllgCJZXhRZDTwQGvzhghRGRmfXgMNnwXfxKKWBZbLdlxqGltBzBfXQndglvJFZSXRtTQVHglkg">pangolincreations@gmail.com</a>
         </div>
       </div>
       
@@ -118,7 +123,7 @@
           <i class="fab fa-whatsapp"></i>
         </div>
         <div class="contact-info">
-          076 1062 748
+         <a href = ""> 076 1062 748</a>
         </div>
       </div>
     </div>

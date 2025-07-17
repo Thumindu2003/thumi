@@ -21,14 +21,15 @@ $loggedIn = isset($_SESSION['loggedin']) ? $_SESSION['loggedin'] : false; // Pro
         <ul class="nav-links">
           <li><a href="index.php">Home</a></li>
           <li><a href="services.php">Services</a></li>
-          <li><a href="cart.php">Cart <span id="cart-count" class="cart-count">0</span></a></li>
+          <li><a href="cart.php">Cart </a></li>
           <li><a href="about.php">About Us</a></li>
           <li><a href="contact.php">Contact</a></li>
           <?php if(!$loggedIn): ?>
             <li><a href="account.php">Account</a></li>
           <?php endif; ?>
+          <?php include 'profile_dropdown.php'; ?>
         </ul>
-        <?php include 'profile_dropdown.php'; ?>
+        
       </div>
     </nav>
   </header>

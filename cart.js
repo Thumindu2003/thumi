@@ -37,7 +37,7 @@ function displayCartItems() {
   cart.forEach((item, index) => {
     itemsHTML += `
       <div class="cart-item">
-        <img src="${item.image}" alt="${item.SName}" class="cart-item-image">
+        <img src="${/^Pictures\//.test(item.image) || /^data:image\//.test(item.image) || /^service_image\.php/.test(item.image) ? item.image : 'service_image.php?sid=' + item.SID}" alt="${item.SName}" class="cart-item-image">
         <div class="cart-item-details">
           <h3>${item.SName}</h3>
           <p>Rs.${item.SPrice.toFixed(2)}</p>

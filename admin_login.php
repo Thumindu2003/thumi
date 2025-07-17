@@ -3,11 +3,9 @@ session_start();
 
 $showForm = true;
 
-// If redirected from logout, destroy any existing session and start fresh
 if (isset($_GET['logout'])) {
     session_unset();
     session_destroy();
-    // Clear session cookie
     if (ini_get("session.use_cookies")) {
         $params = session_get_cookie_params();
         setcookie(session_name(), '', time() - 42000,
@@ -15,16 +13,15 @@ if (isset($_GET['logout'])) {
             $params["secure"], $params["httponly"]
         );
     }
-    session_start(); // Start a new session for the login page
+    session_start();
     $logoutMsg = "You have been logged out.";
 }
 
 $usernameValue = '';
 $passwordValue = '';
 
-require_once 'connection.php'; // Ensure connection is available before any DB operation
+require_once 'connection.php';
 
-// Load .env admin credentials
 $envAdminUsername = null;
 $envAdminPassword = null;
 $envPath = __DIR__ . '/.env';
@@ -47,7 +44,6 @@ if (isset($logoutMsg)) {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    // Check if .env admin login (allow even if DB is not available)
     if ($envAdminUsername && $envAdminPassword && $username === $envAdminUsername) {
         if ($password === $envAdminPassword) {
             session_regenerate_id(true);
@@ -59,8 +55,6 @@ if (isset($logoutMsg)) {
             $loginError = "Password invalid.";
         }
     } else {
-        // Only try DB login if .env admin login did not succeed
-        // Check connection
         if (!isset($conn) || $conn === null || $conn->connect_error) {
             $loginError = "Database connection error.";
         } else {
@@ -90,9 +84,8 @@ if (isset($logoutMsg)) {
             }
         }
     }
-    // Repopulate username if login failed
-    $usernameValue = htmlspecialchars($username, ENT_QUOTES); // Preserve entered username
-    $passwordValue = htmlspecialchars($password, ENT_QUOTES); // (Not recommended for passwords, but per request)
+    $usernameValue = htmlspecialchars($username, ENT_QUOTES);
+    $passwordValue = htmlspecialchars($password, ENT_QUOTES);
 }
 ?>
 
@@ -103,10 +96,9 @@ if (isset($logoutMsg)) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Login - Pangolin Creations</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="admin_style.css">
+  <link rel="stylesheet" href="StyleSheet.css">
   <style>
-    /* Modern login page overrides */
-    body.admin-login {
+    body {
       background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
       min-height: 100vh;
       display: flex;
@@ -114,11 +106,11 @@ if (isset($logoutMsg)) {
       align-items: center;
       font-family: 'Arial', sans-serif;
     }
-    .login-container {
+    .form-container {
       width: 100%;
       max-width: 380px;
-      padding: 0 12px;
       margin: 0 auto;
+      padding: 0 12px;
     }
     .login-box {
       background: #fff;
@@ -128,7 +120,7 @@ if (isset($logoutMsg)) {
       text-align: center;
       position: relative;
     }
-    .admin-logo {
+    .frmLogo {
       max-width: 140px;
       margin-bottom: 16px;
     }
@@ -206,29 +198,26 @@ if (isset($logoutMsg)) {
       .login-box {
         padding: 18px 4px 12px 4px;
       }
-      .admin-logo {
+      .frmLogo {
         max-width: 90px;
       }
-      .login-container {
+      .form-container {
         max-width: 98vw;
       }
     }
   </style>
 </head>
-<body class="admin-login">
-  <div class="login-container">
+<body>
+  <div class="form-container">
     <div class="login-box">
-      <img src="Pictures/logo pangolin.png" alt="Pangolin Creations Logo" class="admin-logo">
+      <img src="Pictures/logo pangolin.png" alt="form logo" class="frmLogo">
       <h2>Admin Panel Login</h2>
-      
       <?php if (isset($logoutMsg)): ?>
         <div class="alert alert-info"><?php echo $logoutMsg; ?></div>
       <?php endif; ?>
-      
       <?php if (isset($loginError)): ?>
         <div class="alert alert-danger"><?php echo $loginError; ?></div>
       <?php endif; ?>
-      
       <?php if ($showForm): ?>
       <form method="POST">
         <div class="input-group">
@@ -239,7 +228,7 @@ if (isset($logoutMsg)) {
           <i class="fas fa-lock"></i>
           <input type="password" name="password" placeholder="Password" required value="<?php echo $passwordValue; ?>">
         </div>
-        <button type="submit" name="login" class="login-btn">Login</button>
+        <button type="submit" name="login" class="login-btn">LOGIN</button>
       </form>
       <?php endif; ?>
     </div>

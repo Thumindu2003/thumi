@@ -98,11 +98,17 @@ $services = $conn->query("SELECT * FROM tblservice ORDER BY SID DESC")->fetch_al
               <tr>
                 <td><?php echo $service['SID']; ?></td>
                 <td>
-                  <?php if (!empty($service['image'])): ?>
-                    <img src="data:image/jpeg;base64,<?php echo base64_encode($service['image']); ?>" alt="<?php echo htmlspecialchars($service['SName']); ?>" class="service-thumbnail">
-                  <?php else: ?>
-                    <img src="Pictures/default.jpg" alt="Default Image" class="service-thumbnail">
-                  <?php endif; ?>
+                  <?php
+                    $imgPath = $service['image'];
+                    // If image is a BLOB, use service_image.php
+                    if (!empty($imgPath) && !preg_match('/\.(jpg|jpeg|png|gif)$/i', $imgPath)) {
+                      echo '<img src="service_image.php?sid=' . $service['SID'] . '" alt="' . htmlspecialchars($service['SName']) . '" class="service-thumbnail">';
+                    } elseif (!empty($imgPath) && preg_match('/\.(jpg|jpeg|png|gif)$/i', $imgPath) && file_exists(__DIR__ . '/' . $imgPath)) {
+                      echo '<img src="' . htmlspecialchars($imgPath) . '" alt="' . htmlspecialchars($service['SName']) . '" class="service-thumbnail">';
+                    } else {
+                      echo '<img src="Pictures/default.jpg" alt="Default Image" class="service-thumbnail">';
+                    }
+                  ?>
                 </td>
                 <td><?php echo htmlspecialchars($service['SName']); ?></td>
                 <td>Rs.<?php echo number_format($service['SPrice'], 2); ?></td>

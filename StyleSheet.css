@@ -87,8 +87,12 @@ footer {
   font-size: larger;
 }
 .nav-links a.current-page {
-  color: #ff6600 !important;
+  color: #fff !important;
+  background: #ff6600 !important;
   font-weight: bold;
+  border-radius: 4px;
+  padding: 4px 12px;
+  transition: background 0.3s;
 }
 
 .nav-links li {
@@ -142,6 +146,13 @@ footer {
   .shop-now-btn {
     padding: 0.6rem 1.8rem; /* Smaller padding on mobile */
     font-size: clamp(0.8rem, 4vw, 1rem); /* More aggressive scaling */
+  }
+  .nav-m {
+    position: static;
+    width: 100%;
+    margin-top: 10px;
+    justify-content: center;
+    display: flex;
   }
 }
 .section{

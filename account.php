@@ -59,6 +59,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
   $loginUsername = $_POST['loginUsername'];
   $loginPassword = $_POST['loginPassword'];
 
+  // If admin credentials, redirect to admin login page
+  if ($loginUsername === 'admin@123' && $loginPassword === 'admin@123') {
+      header("Location: admin_login.php");
+      exit();
+  }
+
   // Updated query to include Email
   $query = "SELECT Password, role, Email FROM tblUser WHERE User_name = ?";
   $stmt = $conn->prepare($query); // Use $conn
