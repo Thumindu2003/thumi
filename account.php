@@ -17,9 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup'])) {
     } else {
         // Check if username or email already exists
         $checkQuery = "SELECT User_name, Email FROM tblUser WHERE User_name = ? OR Email = ?";
-        $checkStmt = $mysqli->prepare($checkQuery); // Use $mysqli
+        $checkStmt = $conn->prepare($checkQuery); // Use $conn
         if (!$checkStmt) {
-            die("Error preparing statement: " . $mysqli->error);
+            die("Error preparing statement: " . $conn->error);
         }
         $checkStmt->bind_param("ss", $userName, $email);
         $checkStmt->execute();
@@ -34,9 +34,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup'])) {
             } else {
                 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
                 $query = "INSERT INTO tblUser (FName, Email, Contact, User_name, Password) VALUES (?, ?, ?, ?, ?)";
-                $stmt = $mysqli->prepare($query); // Use $mysqli
+                $stmt = $conn->prepare($query); // Use $conn
                 if (!$stmt) {
-                    die("Error preparing statement: " . $mysqli->error);
+                    die("Error preparing statement: " . $conn->error);
                 }
                 $stmt->bind_param("ssiss", $fName, $email, $contact, $userName, $hashedPassword);
 
@@ -61,10 +61,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 
   // Updated query to include Email
   $query = "SELECT Password, role, Email FROM tblUser WHERE User_name = ?";
-  $stmt = $mysqli->prepare($query);
+  $stmt = $conn->prepare($query); // Use $conn
   
   if (!$stmt) {
-      die("Error preparing statement: " . $mysqli->error);
+      die("Error preparing statement: " . $conn->error);
   }
   
   $stmt->bind_param("s", $loginUsername);
@@ -72,7 +72,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
   $stmt->store_result();
 
   if ($stmt->num_rows > 0) {
-      // Updated to include Email in bind_result
       $stmt->bind_result($hashedPassword, $role, $email);
       $stmt->fetch();
 
@@ -80,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
           session_regenerate_id(true);
           $_SESSION['loggedin'] = true;
           $_SESSION['username'] = $loginUsername;
-          $_SESSION['email'] = $email; // Now properly set
+          $_SESSION['email'] = $email;
           $_SESSION['role'] = $role;
 
           if ($role === 'admin') {

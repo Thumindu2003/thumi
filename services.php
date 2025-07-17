@@ -9,9 +9,9 @@ $loggedIn = isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true;
 
 include "connection.php";
 
-// Change $conn to $mysqli for connection error check
-if ($mysqli->connect_error) {
-  die("Connection failed: " . $mysqli->connect_error);
+// Use $conn for connection error check
+if ($conn->connect_error) {
+  die("Connection failed: " . $conn->connect_error);
 }
 ?>
 
@@ -50,12 +50,12 @@ if ($mysqli->connect_error) {
   <main>
     <section class="services">
       <?php
-      // Change $conn to $mysqli for queries
+      // Use $conn for queries
       $sql = "SELECT SID, SName, SPrice, image FROM tblservice";
-      $result = $mysqli->query($sql);
+      $result = $conn->query($sql);
 
       if (!$result) {
-          die("Query failed: " . $mysqli->error);
+          die("Query failed: " . $conn->error);
       }
 
       if ($result->num_rows > 0) {
@@ -117,4 +117,4 @@ if ($mysqli->connect_error) {
   </script>
 </body>
 </html>
-<?php $mysqli->close(); ?>
+<?php $conn->close(); ?>

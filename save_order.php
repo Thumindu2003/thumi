@@ -24,7 +24,7 @@ foreach ($input['cart'] as $item) {
     $SID = intval($item['SID']);
     $SName = $item['SName'];
     $quantity = isset($item['quantity']) ? intval($item['quantity']) : 1;
-    $stmt = $mysqli->prepare("INSERT INTO cart_orders (user_name, SID, SName, quantity, status) VALUES (?, ?, ?, ?, 'pending')");
+    $stmt = $conn->prepare("INSERT INTO cart_orders (user_name, SID, SName, quantity, status) VALUES (?, ?, ?, ?, 'pending')");
     $stmt->bind_param("ssis", $user_name, $SID, $SName, $quantity);
     if (!$stmt->execute()) {
         $success = false;
@@ -38,5 +38,5 @@ if ($success) {
 } else {
     echo json_encode(['success' => false, 'message' => 'Failed to save order.']);
 }
-$mysqli->close();
+$conn->close();
 ?>

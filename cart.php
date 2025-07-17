@@ -13,7 +13,7 @@ $sql = "SELECT c.SID, c.SName, s.SPrice
         FROM cart_orders c 
         INNER JOIN tblservice s ON c.SID = s.SID 
         WHERE c.user_name = ? AND c.status = 'pending'";
-$stmt = $mysqli->prepare($sql);
+$stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $user_name);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -180,7 +180,7 @@ $stmt->close();
     renderCartItems();
   </script>
 <?php
-$mysqli->close();
+$conn->close();
 ?>
 </body>
 </html>
